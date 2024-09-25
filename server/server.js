@@ -7,32 +7,34 @@ const server = require("http").Server(app);
 
 const io = require("socket.io")(server);
 
+const { generateMessage, generateLocationMessage } = require("./utils/message");
+
 io.on("connection", (socket) => {
   console.log("a user connected");
 
-  socket.emit("userJoined", {
-    from: "Admin",
-    message: "Welcome to chat app",
-    createdAt: new Date().getTime(),
-  });
+  socket.emit("newMessage", generateMessage("Admin", "Welcome to chat app"));
 
-  socket.broadcast.emit("userJoined", {
-    from: "Admin",
-    message: "New User Joind",
-    createdAt: new Date().getTime(),
-  });
+  socket.broadcast.emit(
+    "userJoined",
+    generateMessage("Admin", "New user joined")
+  );
 
-  socket.on("createMessage", (message) => {
+  socket.on("createMessage", (message, callback) => {
     console.log("CreateMessage", message);
 
-    io.emit("newMessage", {
-      from: message.from,
-      message: message.text,
-      createdAt: new Date().getTime(),
-    });
+    io.emit("newMessage", generateMessage(message.from, message.text));
+
+    if (callback && typeof callback === "function") {
+      callback("This is the Server");
+    }
   });
 
-  //   io.emit("message", "Hello from server");
+  socket.on("createLocationMessage", (coords) => {
+    io.emit(
+      "newLocationMessage",
+      generateLocationMessage("User", coords.lat, coords.lng)
+    );
+  });
 
   socket.on("disconnect", () => {
     console.log("user disconnected");
