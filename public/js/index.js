@@ -20,6 +20,25 @@ let socket = io();
 socket.on("connect", () => {
   console.log("connected");
 
+  let searchQuery = window.location.search.substring(1);
+  let params = JSON.parse(
+    '{"' +
+      decodeURI(searchQuery)
+        .replace(/&/g, '","')
+        .replace(/\+/g, " ")
+        .replace(/=/g, '":"') +
+      '"}'
+  );
+
+  socket.emit("join", params, function (err) {
+    if (err) {
+      alert(err);
+      window.location.href = "/";
+    } else {
+      console.log("No error detected!");
+    }
+  });
+
   socket.on("userJoined", (data) => {
     console.log(data);
   });
@@ -49,6 +68,22 @@ socket.on("connect", () => {
   //   // // Now we want to appened it to the body ..
   //   // document.querySelector("body").appendChild(li);
   // });
+
+  socket.on("updateUsersList", function (users) {
+    console.log(users);
+
+    const ol = document.createElement("ol");
+
+    users.forEach((ele) => {
+      let li = document.createElement("li");
+      li.innerHTML = ele;
+      ol.appendChild(li);
+    });
+
+    let usersList = document.querySelector("#users");
+    usersList.innerHTML = "";
+    usersList.appendChild(ol);
+  });
 
   socket.on("newMessage", (data) => {
     const template = document.querySelector("#message-template").innerHTML;
@@ -106,16 +141,16 @@ socket.on("connect", () => {
     console.log(data);
   });
 
-  socket.emit(
-    "createMessage",
-    {
-      from: "Osama",
-      text: "Hey!",
-    },
-    function (message) {
-      console.log("Server got it", message); // This is the callback
-    }
-  );
+  // socket.emit(
+  //   "createMessage",
+  //   {
+  //     from: "Osama",
+  //     text: "Hey!",
+  //   },
+  //   function (message) {
+  //     console.log("Server got it", message); // This is the callback
+  //   }
+  // );
 });
 
 document.querySelector("#sendBtn").addEventListener("click", (e) => {
