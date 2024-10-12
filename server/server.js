@@ -35,7 +35,6 @@ io.on("connection", (socket) => {
     users.removeUserById(socket.io);
     const userr = users.addUser(socket.id, params.name, params.room);
 
-    // const userr = users.getUserById(socket.io);
     console.log(userr);
 
     io.to(params.room).emit(
@@ -72,7 +71,7 @@ io.on("connection", (socket) => {
     let user = users.getUserById(socket.id);
     io.to(user.roomName).emit(
       "newLocationMessage",
-      generateLocationMessage("User", coords.lat, coords.lng)
+      generateLocationMessage(user.userName, coords.lat, coords.lng)
     );
   });
 
